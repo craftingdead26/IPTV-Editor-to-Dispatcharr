@@ -11,6 +11,8 @@ from pathlib import Path
 
 ATTRIBUTE_PATTERN = re.compile(r'([A-Za-z0-9_-]+)="([^"]*)"')
 PREFERRED_ATTRIBUTE_ORDER = ("tvg-id", "tvg-name", "tvg-logo", "group-title")
+DEFAULT_CHANNEL_NAME = "Unknown"
+DEFAULT_EXTINF_DURATION = -1
 
 
 @dataclass
@@ -43,7 +45,7 @@ def parse_m3u(path: Path) -> list[Channel]:
             continue
         if pending_attrs is None:
             continue
-        name = pending_name or pending_attrs.get("tvg-name", "Unknown")
+        name = pending_name or pending_attrs.get("tvg-name", DEFAULT_CHANNEL_NAME)
         channels.append(Channel(name=name, url=line, attrs=pending_attrs))
         pending_attrs = None
         pending_name = ""
@@ -78,7 +80,7 @@ def to_m3u(channels: list[Channel]) -> str:
             attrs["tvg-name"] = channel.name
         sorted_attrs = sort_attrs(attrs)
         attr_text = " ".join(f'{key}="{value}"' for key, value in sorted_attrs)
-        lines.append(f"#EXTINF:-1 {attr_text},{channel.name}".rstrip())
+        lines.append(f"#EXTINF:{DEFAULT_EXTINF_DURATION} {attr_text},{channel.name}".rstrip())
         lines.append(channel.url)
     return "\n".join(lines) + "\n"
 
