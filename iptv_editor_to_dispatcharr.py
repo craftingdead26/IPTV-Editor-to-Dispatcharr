@@ -118,7 +118,11 @@ def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
 
-    channels = parse_m3u(args.input_file)
+    try:
+        channels = parse_m3u(args.input_file)
+    except OSError as exc:
+        parser.error(f"Failed to read input file '{args.input_file}': {exc}")
+
     if not channels:
         parser.error("No channels were found in the provided playlist.")
 
