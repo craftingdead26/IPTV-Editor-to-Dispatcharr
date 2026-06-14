@@ -43,7 +43,8 @@ def parse_m3u(path: Path) -> list[Channel]:
             continue
         if pending_attrs is None:
             continue
-        channels.append(Channel(name=pending_name or pending_attrs.get("tvg-name", "Unknown"), url=line, attrs=pending_attrs))
+        name = pending_name or pending_attrs.get("tvg-name", "Unknown")
+        channels.append(Channel(name=name, url=line, attrs=pending_attrs))
         pending_attrs = None
         pending_name = ""
 
@@ -75,7 +76,8 @@ def to_m3u(channels: list[Channel]) -> str:
         attrs = dict(channel.attrs)
         if channel.name and not attrs.get("tvg-name"):
             attrs["tvg-name"] = channel.name
-        attr_text = " ".join(f'{key}="{value}"' for key, value in sort_attrs(attrs))
+        sorted_attrs = sort_attrs(attrs)
+        attr_text = " ".join(f'{key}="{value}"' for key, value in sorted_attrs)
         lines.append(f"#EXTINF:-1 {attr_text},{channel.name}".rstrip())
         lines.append(channel.url)
     return "\n".join(lines) + "\n"
