@@ -120,6 +120,8 @@ def main() -> int:
 
     try:
         channels = parse_m3u(args.input_file)
+    except UnicodeDecodeError as exc:
+        parser.error(f"Input file is not valid UTF-8: {exc}")
     except OSError as exc:
         parser.error(f"Failed to read input file '{args.input_file}': {exc}")
 
@@ -128,7 +130,10 @@ def main() -> int:
 
     output = to_m3u(channels) if args.format == "m3u" else to_dispatcharr_json(channels)
     if args.output:
-        args.output.write_text(output, encoding="utf-8")
+        try:
+            args.output.write_text(output, encoding="utf-8")
+        except OSError as exc:
+            parser.error(f"Failed to write output file '{args.output}': {exc}")
     else:
         print(output, end="")
 
